@@ -323,9 +323,9 @@ func testReaddir(t *testing.T, s *Client, path string) {
 		if _, ok := found[n.Name()]; ok {
 			found[n.Name()] = true
 
-		if n.Name() == "." && !n.IsDir() {
-		  t.Errorf("ReadDir(%q) claims '.' is not a directory, mode %v", path, n.Mode())
-		}
+			if n.Name() == "." && !n.IsDir() {
+				t.Errorf("ReadDir(%q) claims '.' is not a directory, mode %v", path, n.Mode())
+			}
 			continue
 		}
 		t.Errorf("s.ReadDir(%q) returned unexpected name %q", path, n.Name())
@@ -369,8 +369,36 @@ func testPut(t *testing.T, s *Client, file string) {
 		t.Errorf("Open(%q, RDONLY, nil) = _, %v, want non-nil", file, err)
 		return
 	}
-	defer f.Close()
 	b2, err := ioutil.ReadAll(f)
+	if err != nil {
+		t.Errorf("ReadAll(%v) = _, %v, want nil", f, b)
+		f.Close()
+		return
+	}
+	if string(b) != string(b2) {
+		t.Errorf("Put wrote %q but subsequent read returned %q", b, b2)
+	}
+	f.Close()
+
+	// Also test that Put truncates the file.
+	osf, err := os.OpenFile(file, int(os.O_WRONLY|os.O_TRUNC), 0)
+	if err != nil {
+		t.Errorf("Open(%q, WRONLY|TRUNC, 0) = _, %v want nil", err)
+	}
+	if _, err := osf.Write([]byte("not the test pattern")); err != nil {
+		t.Errorf("Write(_) = _, %v, want nil", err)
+	}
+	osf.Close()
+	if n, err := s.Put(bytes.NewReader(b), file); err != nil || int(n) != len(b) {
+		t.Errorf("Put(%q, %q) = %v, %v, want %d, nil", b, file, n, err, len(b))
+	}
+	f, err = s.OpenFile(file, int(os.O_RDONLY), 0)
+	if err != nil {
+		t.Errorf("Open(%q, RDONLY, nil) = _, %v, want non-nil", file, err)
+		return
+	}
+	defer f.Close()
+	b2, err = ioutil.ReadAll(f)
 	if err != nil {
 		t.Errorf("ReadAll(%v) = _, %v, want nil", f, b)
 		return

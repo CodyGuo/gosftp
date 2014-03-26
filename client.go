@@ -781,7 +781,7 @@ func (f *File) Name() string {
 // the file with default permissions if it does not exist and overwriting it if
 // it does.
 func (c *Client) Put(r io.Reader, remote string) (n int64, _ error) {
-	f, err := c.OpenFile(remote, os.O_WRONLY|os.O_CREATE, 0)
+	f, err := c.OpenFile(remote, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0)
 	if err != nil {
 		return 0, err
 	}

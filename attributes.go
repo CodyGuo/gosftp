@@ -94,7 +94,7 @@ func newFileMode(m uint32) (f os.FileMode) {
 	case syscall.S_IFBLK:
 		f |= os.ModeDevice
 	case syscall.S_IFCHR:
-		f |= os.ModeCharDevice|os.ModeDevice
+		f |= os.ModeCharDevice | os.ModeDevice
 	case syscall.S_IFDIR:
 		f |= os.ModeDir
 	case syscall.S_IFIFO:
