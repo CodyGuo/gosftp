@@ -71,6 +71,8 @@ func TestAll(t *testing.T) {
 	testReaddir(t, s.Client, dir)
 	testSymlink(t, s.Client, file)
 	testRemove(t, s.Client, file)
+	testLargeRead(t, s.Client, file)
+	testRemove(t, s.Client, file)
 	testPut(t, s.Client, file)
 	testChmod(t, s.Client, file)
 	testRemove(t, s.Client, file)
@@ -154,6 +156,40 @@ func testWriteRead(t *testing.T, s *Client, file string) {
 	}
 	if string(buf) != "e" {
 		t.Errorf("string(%q) != %q", buf, "e")
+	}
+}
+
+func testLargeRead(t *testing.T, s *Client, file string) {
+	f, err := s.OpenFile(file, int(os.O_WRONLY|os.O_CREATE|os.O_TRUNC), 0644)
+	if err != nil {
+		t.Errorf("Open(%q, WRONLY|CREATE|TRUNC, nil) = _, %v, want non-nil", file, err)
+		return
+	}
+	numBytes := 2*maxDataBytes + 13
+	data := make([]byte, numBytes)
+	if n, err := f.Write(data); err != nil || n != len(data) {
+		t.Errorf("Write(%q) = %d, %v, want %d, nil", data, n, err, len(data))
+	}
+	if err := f.Close(); err != nil {
+		t.Errorf("f.Close() = %v, want nil", err)
+	}
+
+	f, err = s.OpenFile(file, int(os.O_RDONLY), 0)
+	if err != nil {
+		t.Errorf("Open(%q, RDONLY, nil) = _, %v, want non-nil", file, err)
+		return
+	}
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		t.Errorf("ReadAll(%v) = _, %v, want nil", f, b)
+		return
+	}
+	if len(b) != numBytes {
+		t.Errorf("length read = %d, want %d", len(b), numBytes)
+		return
+	}
+	if err := f.Close(); err != nil {
+		t.Errorf("f.Close() = %v, want nil", err)
 	}
 }
 
