@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"sync"
 
-	"code.google.com/p/gosshnew/ssh"
+	"code.google.com/p/go.crypto/ssh"
 )
 
 // fxpChan is a channel on which a message recipient can wait for the message

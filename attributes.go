@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"code.google.com/p/gosshnew/ssh"
+	"code.google.com/p/go.crypto/ssh"
 )
 
 // Constants used for indicating which fields are present in the returned data.
