@@ -8,6 +8,7 @@ package sftp
 
 import (
 	"bytes"
+	"flag"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -15,6 +16,8 @@ import (
 	"syscall"
 	"testing"
 )
+
+var sftpServerPath = flag.String("sftp_server_path", "sftp-server", "The path to the OpenSSH sftp-server binary. If the value contains no path separators, the path is searched.")
 
 type testSFTP struct {
 	*Client
@@ -26,9 +29,7 @@ func newTestSFTP(t *testing.T) *testSFTP {
 		Client: &Client{
 			chans: &fxpChanList{},
 		},
-		// cmd: exec.Command("/usr/lib/openssh/sftp-server", "-u", "0", "-e", "-l", "DEBUG3"),
-		// TODO(ekg): make the path to the binary a flag.
-		cmd: exec.Command("/home/ekg/Downloads/openssh-6.5p1/sftp-server", "-u", "0", "-e", "-l", "DEBUG3"),
+		cmd: exec.Command(*sftpServerPath, "-u", "0", "-e", "-l", "DEBUG3"),
 	}
 	var err error
 	if sftp.stdin, err = sftp.cmd.StdinPipe(); err != nil {
@@ -39,7 +40,7 @@ func newTestSFTP(t *testing.T) *testSFTP {
 	}
 	sftp.cmd.Stderr = os.Stderr
 	if err := sftp.cmd.Start(); err != nil {
-		t.Fatalf("sftp.cmd.Start() = %v, want nil", err)
+		t.Fatalf("error starting SFTP server: %v", err)
 	}
 	if err := sftp.init(); err != nil {
 		t.Fatalf("sftp.init() = %v, want nil", err)
