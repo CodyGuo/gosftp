@@ -9,7 +9,7 @@ package sftp
 import (
 	"fmt"
 
-	"code.google.com/p/gosshnew/ssh"
+	"code.google.com/p/go.crypto/ssh"
 )
 
 // SSH file transer protocol request packet types, defined in section 3,
