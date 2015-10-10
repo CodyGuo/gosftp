@@ -5,4 +5,4 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 // package sftp provides an SFTP client.
-package sftp
+package gosftp
